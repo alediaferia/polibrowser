@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<gui name="polibrowser"
+     version="1"
+     xmlns="http://www.kde.org/standards/kxmlgui/1.0"
+     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+     xsi:schemaLocation="http://www.kde.org/standards/kxmlgui/1.0
+                         http://www.kde.org/standards/kxmlgui/1.0/kxmlgui.xsd" >
+
+<MenuBar>
+    <Menu name="go" >
+        <Action name="back" />
+	<Action name="forward" />
+	<Action name="stop" />
+	<Action name="reload" />
+    </Menu>
+    <Menu name="file" >
+        <Action name="new_tab" />
+    </Menu>
+</MenuBar>
+
+<ToolBar iconText="iconOnly" name="mainToolBar" >
+    <text>Main ToolBar</text>
+    <Action name="back" />
+    <Action name="forward" />
+    <Action name="stop" />
+    <Action name="reload" />
+</ToolBar>
+
+<ToolBar fullWidth="true" iconText="icononly" name="locationToolBar" newline="false"><text>Location Toolbar</text>
+    <Action name="location_combo" />
+    <Action name="go_url" />
+</ToolBar>
+
+<ToolBar fullWidth="false" name="zoomToolBar" newline="true" hidden="true"><text>Zoom Toolbar</text>
+    <Action name="zoom_slider" />
+</ToolBar>
+
+</gui>
