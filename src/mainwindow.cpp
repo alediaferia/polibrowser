@@ -70,7 +70,8 @@ MainWindow::MainWindow(QWidget *parent) : KXmlGuiWindow(parent), m_combo(new KHi
 }
 
 MainWindow::~MainWindow()
-{}
+{
+}
 
 void MainWindow::setupActions()
 {
@@ -90,13 +91,13 @@ void MainWindow::setupActions()
     reloadAction->setText(i18n("Reload"));
     reloadAction->setIcon(KIcon("view-refresh"));
     actionCollection()->addAction("reload", reloadAction);
-    connect(forwardAction, SIGNAL(triggered()), this, SLOT(reload()));
+    connect(reloadAction, SIGNAL(triggered()), this, SLOT(reload()));
 
     KAction *stopAction = new KAction(this);
     stopAction->setText(i18n("Stop"));
     stopAction->setIcon(KIcon("process-stop"));
     actionCollection()->addAction("stop", stopAction);
-    connect(forwardAction, SIGNAL(triggered()), this, SLOT(stop()));
+    connect(stopAction, SIGNAL(triggered()), this, SLOT(stop()));
 
     m_combo->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     connect(m_combo, SIGNAL(returnPressed()), this, SLOT(loadAddress()));
@@ -309,6 +310,7 @@ void MainWindow::downloadUrl(const KUrl &url)
 
 void MainWindow::slotLoadFinished(bool ok)
 {
+    Q_UNUSED(ok)
     m_progressBar->hide();
     currentView()->setFocus(Qt::OtherFocusReason);
 }
