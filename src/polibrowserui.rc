@@ -23,6 +23,7 @@
     <text>Main ToolBar</text>
     <Action name="back" />
     <Action name="forward" />
+    <Separator />
     <Action name="stop" />
     <Action name="reload" />
 </ToolBar>

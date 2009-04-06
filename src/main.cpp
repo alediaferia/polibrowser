@@ -20,14 +20,13 @@
 #include <KAboutData>
 #include <KCmdLineArgs>
 
-
 #include "mainwindow.h"
 
 int main ( int argc, char *argv[] )
 {
 
   KAboutData aboutData("polibrowser", 0, ki18n("Polibrowser"),
-                       "1.1", ki18n("A didactic web browser for KDE"), KAboutData::License_GPL_V3,
+                       "0.1", ki18n("A didactic web browser for KDE"), KAboutData::License_GPL_V3,
                        ki18n("Copyright (c) 2009"));
 
   aboutData.addAuthor(ki18n("Alessandro Diaferia"), 
