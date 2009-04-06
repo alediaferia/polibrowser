@@ -30,6 +30,7 @@
 #include <QProgressBar>
 #include <QFontMetrics>
 #include <QNetworkRequest>
+#include <QNetworkReply>
 #include <QFileInfo>
 
 #include <KLocale>
@@ -193,6 +194,8 @@ void MainWindow::addTab()
     webView->page()->settings()->setAttribute(QWebSettings::JavaEnabled, true);
     webView->page()->settings()->setAttribute(QWebSettings::PluginsEnabled, true);
 
+    webView->page()->setForwardUnsupportedContent(true);
+
     m_tabWidget->addTab(webView, i18n("Untitled Tab"));
     if (m_tabWidget->count() > 1) {
         m_tabWidget->setTabBarHidden(false);
@@ -203,6 +206,7 @@ void MainWindow::addTab()
     connect (webView->page(), SIGNAL(linkHovered(const QString &, const QString&, const QString&)),
              this, SLOT(slotLinkHovered(const QString &, const QString &, const QString &)));
     connect (webView->page(), SIGNAL(downloadRequested(const QNetworkRequest &)), this, SLOT(handleDownloadRequest(const QNetworkRequest &)));
+    connect (webView->page(), SIGNAL(unsupportedContent(QNetworkReply *)), this, SLOT(handleUnsupportedContent(QNetworkReply *)));
 }
 
 QWebView *MainWindow::currentView()
@@ -263,7 +267,16 @@ void MainWindow::slotLinkHovered(const QString &link, const QString &title, cons
 
 void MainWindow::handleDownloadRequest(const QNetworkRequest &request)
 {
-    KUrl url = request.url();
+    downloadUrl(request.url());
+}
+
+void MainWindow::handleUnsupportedContent(QNetworkReply *reply)
+{
+    downloadUrl(reply->url());
+}
+
+void MainWindow::downloadUrl(const KUrl &url)
+{
     if (!url.isValid()) {
         return;
     }
@@ -283,5 +296,4 @@ void MainWindow::handleDownloadRequest(const QNetworkRequest &request)
     }
 
     KIO::NetAccess::file_copy(url, destination);
-
 }

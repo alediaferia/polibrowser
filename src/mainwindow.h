@@ -31,6 +31,7 @@ class KTabWidget;
 class QProgressBar;
 class QSlider;
 class QNetworkRequest;
+class QNetworkReply;
 
 class MainWindow : public KXmlGuiWindow
 {
@@ -49,6 +50,7 @@ public slots:
     void goToUrl(const KUrl &);
     void goTo(const QString &address = QString("http://www.kde.org"));
     void loadAddress(); // loads the address specified in the combobox
+    void downloadUrl(const KUrl &);
 
 protected slots:
     void switchTab(int index);
@@ -58,6 +60,7 @@ protected slots:
     void closeTab(QWidget *);
     void slotLinkHovered(const QString &, const QString &, const QString &);
     void handleDownloadRequest(const QNetworkRequest &request);
+    void handleUnsupportedContent(QNetworkReply *reply);
 
 private:
     QWebView *m_webView;
