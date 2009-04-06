@@ -66,7 +66,7 @@ MainWindow::MainWindow(QWidget *parent) : KXmlGuiWindow(parent), m_combo(new KHi
 
     setupGUI();
 
-    QTimer::singleShot(0, this, SLOT(goTo()));
+    QTimer::singleShot(0, this, SLOT(loadHome()));
 }
 
 MainWindow::~MainWindow()
@@ -156,13 +156,18 @@ void MainWindow::stop()
 void MainWindow::goToUrl(const KUrl &url)
 {
     currentView()->setUrl(url);
-    m_combo->lineEdit()->setText(url.url());
 }
 
 void MainWindow::goTo(const QString &address)
 {
     KUrl url(address);
     goToUrl(url);
+}
+
+void MainWindow::loadHome()
+{
+    // TODO: use settings to store home url
+    goTo("http://www.kde.org");
 }
 
 void MainWindow::loadAddress()
@@ -182,8 +187,10 @@ void MainWindow::switchTab(int index)
 
     disconnect(m_progressBar);
     connect(currentView(), SIGNAL(loadProgress(int)), m_progressBar, SLOT(setValue(int)));
+    connect(currentView(), SIGNAL(loadProgress(int)), m_progressBar, SLOT(show()));
 
-    m_combo->lineEdit()->setText(KUrl(currentView()->url()).url());
+    
+    m_combo->setCurrentItem(KUrl(currentView()->url()).prettyUrl(), true);
     setCaption(currentView()->title());
 }
 
@@ -203,6 +210,8 @@ void MainWindow::addTab()
 
     connect (webView, SIGNAL(titleChanged(const QString &)), this, SLOT(slotTitleChanged(const QString &)));
     connect (webView, SIGNAL(iconChanged()), this, SLOT(slotIconChanged()));
+    connect (webView, SIGNAL(loadFinished(bool)), this, SLOT(slotLoadFinished(bool)));
+    connect (webView, SIGNAL(urlChanged(const QUrl &)), this, SLOT(slotUrlChanged(const QUrl &)));
     connect (webView->page(), SIGNAL(linkHovered(const QString &, const QString&, const QString&)),
              this, SLOT(slotLinkHovered(const QString &, const QString &, const QString &)));
     connect (webView->page(), SIGNAL(downloadRequested(const QNetworkRequest &)), this, SLOT(handleDownloadRequest(const QNetworkRequest &)));
@@ -296,4 +305,15 @@ void MainWindow::downloadUrl(const KUrl &url)
     }
 
     KIO::NetAccess::file_copy(url, destination);
+}
+
+void MainWindow::slotLoadFinished(bool ok)
+{
+    m_progressBar->hide();
+    currentView()->setFocus(Qt::OtherFocusReason);
+}
+
+void MainWindow::slotUrlChanged(const QUrl &url)
+{
+    m_combo->setCurrentItem(KUrl(url).prettyUrl(), true);
 }

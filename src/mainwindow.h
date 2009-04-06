@@ -48,7 +48,8 @@ public slots:
     void reload();
     void stop();
     void goToUrl(const KUrl &);
-    void goTo(const QString &address = QString("http://www.kde.org"));
+    void goTo(const QString &address);
+    void loadHome();
     void loadAddress(); // loads the address specified in the combobox
     void downloadUrl(const KUrl &);
 
@@ -61,6 +62,8 @@ protected slots:
     void slotLinkHovered(const QString &, const QString &, const QString &);
     void handleDownloadRequest(const QNetworkRequest &request);
     void handleUnsupportedContent(QNetworkReply *reply);
+    void slotLoadFinished(bool);
+    void slotUrlChanged(const QUrl &);
 
 private:
     QWebView *m_webView;
