@@ -30,6 +30,7 @@
 #include <QProgressBar>
 #include <QFontMetrics>
 #include <QNetworkRequest>
+#include <QFileInfo>
 
 #include <KLocale>
 #include <KAction>
@@ -267,7 +268,15 @@ void MainWindow::handleDownloadRequest(const QNetworkRequest &request)
         return;
     }
 
-    KUrl destination = KFileDialog::getSaveUrl();
+    QString suffix = QFileInfo(url.fileName()).completeSuffix();
+
+    KFileDialog fileDialog(KUrl(), "*."+suffix, this);
+    fileDialog.setConfirmOverwrite(true);
+    fileDialog.setOperationMode(KFileDialog::Saving);
+    fileDialog.setSelection(url.fileName());
+    fileDialog.exec();
+
+    KUrl destination = fileDialog.selectedUrl();
     if (!destination.isValid()) {
         // TODO: warning message
         return;
