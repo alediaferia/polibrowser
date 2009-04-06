@@ -29,6 +29,7 @@
 #include <QRegExp>
 #include <QProgressBar>
 #include <QFontMetrics>
+#include <QNetworkRequest>
 
 #include <KLocale>
 #include <KAction>
@@ -41,6 +42,9 @@
 #include <KHistoryComboBox>
 #include <KTabWidget>
 #include <KDebug>
+#include <KFileDialog>
+
+#include <KIO/NetAccess>
 
 MainWindow::MainWindow(QWidget *parent) : KXmlGuiWindow(parent), m_combo(new KHistoryComboBox(this)), m_zoomSlider(new QSlider(Qt::Horizontal, this))
 {
@@ -197,6 +201,7 @@ void MainWindow::addTab()
     connect (webView, SIGNAL(iconChanged()), this, SLOT(slotIconChanged()));
     connect (webView->page(), SIGNAL(linkHovered(const QString &, const QString&, const QString&)),
              this, SLOT(slotLinkHovered(const QString &, const QString &, const QString &)));
+    connect (webView->page(), SIGNAL(downloadRequested(const QNetworkRequest &)), this, SLOT(handleDownloadRequest(const QNetworkRequest &)));
 }
 
 QWebView *MainWindow::currentView()
@@ -253,4 +258,21 @@ void MainWindow::slotLinkHovered(const QString &link, const QString &title, cons
     Q_UNUSED(textContext)
 
     statusBar()->showMessage(link);
+}
+
+void MainWindow::handleDownloadRequest(const QNetworkRequest &request)
+{
+    KUrl url = request.url();
+    if (!url.isValid()) {
+        return;
+    }
+
+    KUrl destination = KFileDialog::getSaveUrl();
+    if (!destination.isValid()) {
+        // TODO: warning message
+        return;
+    }
+
+    KIO::NetAccess::file_copy(url, destination);
+
 }

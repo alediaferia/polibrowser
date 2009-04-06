@@ -14,7 +14,7 @@ set( polibrowser_SRCS
 
 kde4_add_executable(polibrowser ${polibrowser_SRCS})
 
-target_link_libraries(polibrowser ${KDE4_KDEUI_LIBS} ${QT_QTWEBKIT_LIBRARY})
+target_link_libraries(polibrowser ${KDE4_KDEUI_LIBS} ${KDE4_KIO_LIBS} ${QT_QTWEBKIT_LIBRARY})
 
 install(TARGETS polibrowser DESTINATION ${BIN_INSTALL_DIR})
 install(FILES polibrowserui.rc

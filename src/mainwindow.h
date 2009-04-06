@@ -30,6 +30,7 @@ class KHistoryComboBox;
 class KTabWidget;
 class QProgressBar;
 class QSlider;
+class QNetworkRequest;
 
 class MainWindow : public KXmlGuiWindow
 {
@@ -56,6 +57,7 @@ protected slots:
     void slotIconChanged();
     void closeTab(QWidget *);
     void slotLinkHovered(const QString &, const QString &, const QString &);
+    void handleDownloadRequest(const QNetworkRequest &request);
 
 private:
     QWebView *m_webView;
