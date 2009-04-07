@@ -41,6 +41,7 @@ public:
     ~MainWindow();
 
     void setupActions();
+    QWebView *currentView();
 
 public slots:
     void goBack();
@@ -52,10 +53,10 @@ public slots:
     void loadHome();
     void loadAddress(); // loads the address specified in the combobox
     void downloadUrl(const KUrl &);
+    void addTab();
 
 protected slots:
     void switchTab(int index);
-    void addTab();
     void slotTitleChanged(const QString &);
     void slotIconChanged();
     void closeTab(QWidget *);
@@ -72,7 +73,6 @@ private:
     QProgressBar *m_progressBar;
     QSlider *m_zoomSlider;
 
-    QWebView *currentView();
     int indexByView(QObject *);
 };
 

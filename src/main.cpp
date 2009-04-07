@@ -20,7 +20,7 @@
 #include <KAboutData>
 #include <KCmdLineArgs>
 
-#include "mainwindow.h"
+#include "windowshandler.h"
 
 int main ( int argc, char *argv[] )
 {
@@ -38,8 +38,7 @@ int main ( int argc, char *argv[] )
 
   KApplication app;
 
-  MainWindow *mainwindow = new MainWindow();
-  mainwindow->show();
+  WindowsHandler::instance()->createWindow();
 
   return app.exec();
 

@@ -20,6 +20,7 @@
  */
 
 #include "mainwindow.h"
+#include "webview.h"
 
 #include <QtWebKit/QWebView>
 #include <QtWebKit/QWebPage>
@@ -66,7 +67,7 @@ MainWindow::MainWindow(QWidget *parent) : KXmlGuiWindow(parent), m_combo(new KHi
 
     setupGUI();
 
-    QTimer::singleShot(0, this, SLOT(loadHome()));
+    loadHome();
 }
 
 MainWindow::~MainWindow()
@@ -197,7 +198,7 @@ void MainWindow::switchTab(int index)
 
 void MainWindow::addTab()
 {
-    QWebView *webView = new QWebView;
+    QWebView *webView = new WebView(this);
     webView->page()->settings()->setAttribute(QWebSettings::JavascriptEnabled, true);
     webView->page()->settings()->setAttribute(QWebSettings::JavaEnabled, true);
     webView->page()->settings()->setAttribute(QWebSettings::PluginsEnabled, true);
