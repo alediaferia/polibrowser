@@ -283,7 +283,9 @@ void MainWindow::handleDownloadRequest(const QNetworkRequest &request)
 
 void MainWindow::handleUnsupportedContent(QNetworkReply *reply)
 {
-    downloadUrl(reply->url());
+    if (!reply->error()) {
+        downloadUrl(reply->url());
+    }
 }
 
 void MainWindow::downloadUrl(const KUrl &url)
