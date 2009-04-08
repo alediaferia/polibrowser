@@ -23,6 +23,7 @@
 
 #include <QObject>
 #include <QList>
+#include <QPointer>
 
 class MainWindow;
 
@@ -38,7 +39,7 @@ public:
 
 private:
     static WindowsHandler *m_instance;
-    QList<MainWindow*> m_windows;
+    QList< QPointer<MainWindow> > m_windows;
 
 private slots:
     void destroyWindows();

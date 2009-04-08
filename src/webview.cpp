@@ -22,6 +22,7 @@
 
 #include "windowshandler.h"
 #include "mainwindow.h"
+
 #include <KDebug>
 
 WebPage::WebPage(QObject *parent) : QWebPage(parent)

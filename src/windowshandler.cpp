@@ -22,18 +22,21 @@
 #include "mainwindow.h"
 
 #include <QApplication>
+#include <KDebug>
 
 WindowsHandler::WindowsHandler(QObject *parent) : QObject(parent)
 {
-    connect(qApp, SIGNAL(destroyed()), this, SLOT(destroyWindows()));
+//     connect(qApp, SIGNAL(destroyed()), this, SLOT(destroyWindows()));
 }
 
 WindowsHandler::~WindowsHandler()
 {
+    destroyWindows();
 }
 
 void WindowsHandler::destroyWindows()
 {
+    kDebug() << "deleting all windows";
     qDeleteAll(m_windows);
 }
 
@@ -52,6 +55,8 @@ MainWindow* WindowsHandler::createWindow()
 {
     MainWindow *mainWindow = new MainWindow();
     mainWindow->show();
+
+    m_windows << QPointer<MainWindow>(mainWindow);
 
     return mainWindow;
 }
