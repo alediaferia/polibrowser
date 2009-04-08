@@ -22,6 +22,9 @@
 #include <QWebView>
 
 class QWidget;
+class QContextMenuEvent;
+class WebView;
+class MainWindow;
 
 class WebPage : public QWebPage
 {
@@ -29,6 +32,12 @@ class WebPage : public QWebPage
 public:
     WebPage(QObject *parent = 0);
     ~WebPage();
+
+private:
+    bool m_newTab;
+    friend class WebView;
+
+    MainWindow* mainWindow();
 
 protected:
     bool acceptNavigationRequest(QWebFrame *frame, const QNetworkRequest &request, NavigationType type);
@@ -43,4 +52,9 @@ public:
     { setPage(new WebPage(this)); }
 
     ~WebView() {}
+
+    void contextMenuEvent(QContextMenuEvent *event);
+
+protected slots:
+    void openInNewTab();
 };

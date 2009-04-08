@@ -205,11 +205,6 @@ void MainWindow::addTab()
 
     webView->page()->setForwardUnsupportedContent(true);
 
-    m_tabWidget->addTab(webView, i18n("Untitled Tab"));
-    if (m_tabWidget->count() > 1) {
-        m_tabWidget->setTabBarHidden(false);
-    }
-
     connect (webView, SIGNAL(titleChanged(const QString &)), this, SLOT(slotTitleChanged(const QString &)));
     connect (webView, SIGNAL(iconChanged()), this, SLOT(slotIconChanged()));
     connect (webView, SIGNAL(loadFinished(bool)), this, SLOT(slotLoadFinished(bool)));
@@ -218,6 +213,13 @@ void MainWindow::addTab()
              this, SLOT(slotLinkHovered(const QString &, const QString &, const QString &)));
     connect (webView->page(), SIGNAL(downloadRequested(const QNetworkRequest &)), this, SLOT(handleDownloadRequest(const QNetworkRequest &)));
     connect (webView->page(), SIGNAL(unsupportedContent(QNetworkReply *)), this, SLOT(handleUnsupportedContent(QNetworkReply *)));
+
+    m_tabWidget->addTab(webView, i18n("Untitled Tab"));
+    if (m_tabWidget->count() > 1) {
+        m_tabWidget->setTabBarHidden(false);
+    }
+
+    m_tabWidget->setCurrentWidget(webView);
 }
 
 QWebView *MainWindow::currentView()
