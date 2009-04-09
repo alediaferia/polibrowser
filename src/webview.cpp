@@ -30,6 +30,7 @@
 #include <KMenu>
 #include <KAction>
 #include <KLocale>
+#include <KIcon>
 #include <KDebug>
 
 WebPage::WebPage(QObject *parent) : QWebPage(parent), m_newTab(false)
@@ -63,10 +64,8 @@ MainWindow* WebPage::mainWindow()
 QWebPage* WebPage::createWindow ( WebWindowType type )
 {
     if (m_newTab) {
-        kDebug() << "opening in new tab";
         m_newTab = false;
         MainWindow *mw = mainWindow();
-        kDebug() << mw;
         if (mw) {
             mw->addTab();
             return mw->currentView()->page();
@@ -79,22 +78,37 @@ QWebPage* WebPage::createWindow ( WebWindowType type )
 
 ///////////WEBVIEW STUFF
 
+WebView::WebView (QWidget *parent) : QWebView(parent)
+{
+    setPage(new WebPage(this));
+
+    pageAction(QWebPage::OpenLinkInNewWindow)->setIcon(KIcon("window-new"));
+    pageAction(QWebPage::DownloadLinkToDisk)->setIcon(KIcon("document-save-as"));
+    pageAction(QWebPage::OpenImageInNewWindow)->setIcon(KIcon("window-new"));
+    pageAction(QWebPage::DownloadImageToDisk)->setIcon(KIcon("document-save"));
+}
 void WebView::contextMenuEvent(QContextMenuEvent *event)
 {
     QWebHitTestResult result = page()->mainFrame()->hitTestContent(event->pos());
     if (!result.linkUrl().isEmpty()) {
         KMenu menu(this);
+
         KAction *newTab = new KAction(this);
         connect (newTab, SIGNAL(triggered()), this, SLOT(openInNewTab()));
         newTab->setText(i18n("Open in new tab"));
+        newTab->setIcon(KIcon("tab-new"));
         menu.addAction(newTab);
+
         menu.addAction(pageAction(QWebPage::OpenLinkInNewWindow));
         menu.addSeparator();
         menu.addAction(pageAction(QWebPage::DownloadLinkToDisk));
+        menu.addAction(pageAction(QWebPage::CopyLinkToClipboard));
+
         if (!result.imageUrl().isEmpty()) {
             menu.addAction(pageAction(QWebPage::OpenImageInNewWindow));
             menu.addAction(pageAction(QWebPage::DownloadImageToDisk));
         }
+
         menu.exec(mapToGlobal(event->pos()));
         return;
     }

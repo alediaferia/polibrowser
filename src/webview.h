@@ -48,9 +48,7 @@ class WebView : public QWebView
 {
     Q_OBJECT
 public:
-    WebView(QWidget *parent = 0) : QWebView(parent)
-    { setPage(new WebPage(this)); }
-
+    WebView(QWidget *parent = 0);
     ~WebView() {}
 
     void contextMenuEvent(QContextMenuEvent *event);
