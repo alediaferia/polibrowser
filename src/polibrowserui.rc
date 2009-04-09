@@ -16,6 +16,7 @@
     </Menu>
     <Menu name="file" >
         <Action name="new_tab" />
+	<Action name="new_window" />
     </Menu>
 </MenuBar>
 

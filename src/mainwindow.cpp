@@ -21,6 +21,7 @@
 
 #include "mainwindow.h"
 #include "webview.h"
+#include "windowshandler.h"
 
 #include <QtWebKit/QWebView>
 #include <QtWebKit/QWebPage>
@@ -32,7 +33,6 @@
 #include <QFontMetrics>
 #include <QNetworkRequest>
 #include <QNetworkReply>
-#include <QFileInfo>
 
 #include <KLocale>
 #include <KAction>
@@ -46,6 +46,7 @@
 #include <KTabWidget>
 #include <KDebug>
 #include <KFileDialog>
+#include <KMimeType>
 
 #include <KIO/NetAccess>
 
@@ -122,6 +123,13 @@ void MainWindow::setupActions()
     tabAction->setShortcut(Qt::CTRL+Qt::Key_T);
     actionCollection()->addAction("new_tab", tabAction);
     connect(tabAction, SIGNAL(triggered()), this, SLOT(addTab()));
+
+    KAction *newWindow = new KAction(this);
+    newWindow->setText(i18n("New window"));
+    newWindow->setIcon(KIcon("window-new"));
+    newWindow->setShortcut(Qt::CTRL+Qt::Key_N);
+    actionCollection()->addAction("new_window", newWindow);
+    connect(newWindow, SIGNAL(triggered()), WindowsHandler::instance(), SLOT(createWindow()));
 
     KAction *zoomAction = new KAction(this);
     zoomAction->setText(i18n("Zoom factor slider"));
@@ -296,7 +304,7 @@ void MainWindow::downloadUrl(const KUrl &url)
         return;
     }
 
-    QString suffix = QFileInfo(url.fileName()).completeSuffix();
+    QString suffix = KMimeType::extractKnownExtension(url.fileName());
 
     KFileDialog fileDialog(KUrl(), "*."+suffix, this);
     fileDialog.setConfirmOverwrite(true);

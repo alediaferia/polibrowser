@@ -35,11 +35,12 @@ public:
 
     static WindowsHandler* instance();
 
-    MainWindow *createWindow();
-
 private:
     static WindowsHandler *m_instance;
     QList< QPointer<MainWindow> > m_windows;
+
+public slots:
+    MainWindow *createWindow();
 
 private slots:
     void destroyWindows();
