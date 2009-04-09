@@ -42,6 +42,7 @@ public:
 
     void setupActions();
     QWebView *currentView();
+    void loadConfig();
 
 public slots:
     void goBack();
@@ -72,6 +73,7 @@ private:
     KHistoryComboBox *m_combo;
     QProgressBar *m_progressBar;
     QSlider *m_zoomSlider;
+    QString m_home;
 
     int indexByView(QObject *);
 };

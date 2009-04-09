@@ -47,6 +47,8 @@
 #include <KDebug>
 #include <KFileDialog>
 #include <KMimeType>
+#include <KConfig>
+#include <KConfigGroup>
 
 #include <KIO/NetAccess>
 
@@ -143,6 +145,12 @@ void MainWindow::setupActions()
     statusBar()->addPermanentWidget(m_progressBar);
 }
 
+void MainWindow::loadConfig()
+{
+    KConfigGroup cfg(KGlobal::config(), "HomePage");
+    m_home = cfg.readEntry("url", "http://www.kde.org");
+}
+
 void MainWindow::goBack()
 {
     currentView()->back();
@@ -171,22 +179,28 @@ void MainWindow::goToUrl(const KUrl &url)
 void MainWindow::goTo(const QString &address)
 {
     KUrl url(address);
+
+    if (url.scheme().isEmpty()) {
+        url = "//" + url.url();
+        url.setScheme("http");
+    }
+
     goToUrl(url);
 }
 
 void MainWindow::loadHome()
 {
     // TODO: use settings to store home url
-    goTo("http://www.kde.org");
+    if (m_home.isNull()) {
+        loadConfig();
+    }
+
+    goTo(m_home);
 }
 
 void MainWindow::loadAddress()
 {
     QString address = m_combo->lineEdit()->text();
-
-    if (!address.contains(QRegExp(".*://"))) {
-        address.prepend("http://");
-    }
 
     goTo(address);
 }
