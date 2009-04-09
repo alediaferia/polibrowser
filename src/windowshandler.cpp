@@ -22,9 +22,11 @@
 #include "mainwindow.h"
 
 #include <QApplication>
+#include <QNetworkAccessManager>
+
 #include <KDebug>
 
-WindowsHandler::WindowsHandler(QObject *parent) : QObject(parent)
+WindowsHandler::WindowsHandler(QObject *parent) : QObject(parent), m_nmanager(0)
 {
 //     connect(qApp, SIGNAL(destroyed()), this, SLOT(destroyWindows()));
 }
@@ -59,6 +61,15 @@ MainWindow* WindowsHandler::createWindow()
     m_windows << QPointer<MainWindow>(mainWindow);
 
     return mainWindow;
+}
+
+QNetworkAccessManager* WindowsHandler::networkAccessManager()
+{
+    if (!m_nmanager) {
+        m_nmanager = new QNetworkAccessManager(this);
+    }
+
+    return m_nmanager;
 }
 
 

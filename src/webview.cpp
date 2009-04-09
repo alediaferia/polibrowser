@@ -26,6 +26,7 @@
 #include <QContextMenuEvent>
 #include <QWebFrame>
 #include <QWebHitTestResult>
+#include <QNetworkRequest>
 
 #include <KMenu>
 #include <KAction>
@@ -35,6 +36,7 @@
 
 WebPage::WebPage(QObject *parent) : QWebPage(parent), m_newTab(false)
 {
+    setNetworkAccessManager(WindowsHandler::instance()->networkAccessManager());
 }
 
 WebPage::~WebPage()
@@ -68,12 +70,14 @@ QWebPage* WebPage::createWindow ( WebWindowType type )
         MainWindow *mw = mainWindow();
         if (mw) {
             mw->addTab();
-            return mw->currentView()->page();
+            QWebPage *page = mw->currentView()->page();
+            return page;
         }
     }
 
     MainWindow *window = WindowsHandler::instance()->createWindow();
-    return window->currentView()->page();
+    QWebPage *page = window->currentView()->page();
+    return page;
 }
 
 ///////////WEBVIEW STUFF

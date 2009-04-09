@@ -26,6 +26,7 @@
 #include <QPointer>
 
 class MainWindow;
+class QNetworkAccessManager;
 
 class WindowsHandler : public QObject
 {
@@ -34,9 +35,11 @@ public:
     ~WindowsHandler();
 
     static WindowsHandler* instance();
+    QNetworkAccessManager *networkAccessManager();
 
 private:
     static WindowsHandler *m_instance;
+    QNetworkAccessManager *m_nmanager;
     QList< QPointer<MainWindow> > m_windows;
 
 public slots:

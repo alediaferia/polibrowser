@@ -133,6 +133,12 @@ void MainWindow::setupActions()
     actionCollection()->addAction("new_window", newWindow);
     connect(newWindow, SIGNAL(triggered()), WindowsHandler::instance(), SLOT(createWindow()));
 
+    KAction *homeAction = new KAction(this);
+    homeAction->setText(i18n("Home"));
+    homeAction->setIcon(KIcon("go-home"));
+    actionCollection()->addAction("home", homeAction);
+    connect(homeAction, SIGNAL(triggered()), this, SLOT(loadHome()));
+
     KAction *zoomAction = new KAction(this);
     zoomAction->setText(i18n("Zoom factor slider"));
     actionCollection()->addAction("zoom_slider", zoomAction);
