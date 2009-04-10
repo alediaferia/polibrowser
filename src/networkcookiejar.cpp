@@ -24,6 +24,10 @@
 #include <QDir>
 #include <QTime>
 #include <QNetworkCookie>
+#include <QDateTime>
+#include <QLatin1Char>
+#include <QDirIterator>
+#include <QUrl>
 
 #include <KCmdLineArgs>
 #include <KAboutData>
@@ -37,35 +41,21 @@ NetworkCookieJar::NetworkCookieJar(QObject *parent) : QNetworkCookieJar(parent)
 
 NetworkCookieJar::~NetworkCookieJar()
 {
-    saveCookiesToDisk();
+    QDir cookieDir(cookieDirectory());
+    foreach (const QString &cookie, cookieDir.entryList(QDir::Files | QDir::NoDotAndDotDot)) { // this avoids duplications
+        cookieDir.remove(cookie);
+    }
+    saveAllCookiesToDisk();
 }
 
-void NetworkCookieJar::saveCookiesToDisk()
+void NetworkCookieJar::saveAllCookiesToDisk()
 {
-    QDir saveDir(cookieDirectory());
-    kDebug() << saveDir.absolutePath();
-    if (!saveDir.exists()) {
-        kWarning() << "unable to save cookies";
-        return;
-    }
-
     foreach (const QNetworkCookie &cookie, allCookies()) {
-        QString fileName = randomCookieName();
-        while (saveDir.exists(fileName)) {
-            fileName = randomCookieName();
-        }
-        QFile cookieFile(saveDir.absolutePath() + QDir::separator() + fileName);
-        kDebug() << "cookie" << cookieFile.fileName();
-        if (!cookieFile.open(QIODevice::WriteOnly)) {
-            kWarning() << "unable to write cookie";
-            continue;
-        }
-        cookieFile.write(cookie.toRawForm());
-        cookieFile.close();
+        saveCookieToDisk(cookie);
     }
 }
 
-QString NetworkCookieJar::randomCookieName()
+QString NetworkCookieJar::randomCookieName() const
 {
     return QString::number(qrand()).append(".txt");
 }
@@ -115,8 +105,83 @@ QList<QNetworkCookie> NetworkCookieJar::loadCookiesFromDisk()
         }
         cookieList << QNetworkCookie::parseCookies(c.readAll());
         c.close();
-        cookieDir.remove(cookieFile);
     }
 
     return cookieList;
+}
+
+bool NetworkCookieJar::setCookiesFromUrl(const QList<QNetworkCookie> &cookieList, const QUrl &url)
+{
+    QString defaultPath = url.path();
+    if (defaultPath.isEmpty()) {
+        defaultPath = QLatin1Char('/');
+    }
+    QString defaultDomain = url.host();
+    QDateTime now = QDateTime::currentDateTime();
+
+    int added = 0;
+    foreach (QNetworkCookie cookie, cookieList) {
+        if (!cookie.domain().startsWith('.') || !defaultDomain.endsWith(cookie.domain())) { // not accepted
+            continue;
+        }
+
+        if (!cookie.isSessionCookie() && cookie.expirationDate() < now) { // not accepted
+            continue;
+        }
+
+        if (cookie.path().isEmpty()) { // fixed (we are not so strict =)
+            kDebug() << "setting default path to" << defaultPath;
+            cookie.setPath(defaultPath);
+        }
+
+        // let's look for already existing cookies and eventually delete from the disk
+        QDirIterator it(cookieDirectory(), QDir::Files | QDir::NoDotAndDotDot);
+        while (it.hasNext()) {
+            QFile c(it.next());
+            if (!c.open(QIODevice::ReadOnly)) {
+                kWarning() << "unable to open cookie" << c.fileName() << "skipping.";
+                continue;
+            }
+            QList<QNetworkCookie> parsedCookies = QNetworkCookie::parseCookies(c.readAll());
+            c.close();
+            foreach (const QNetworkCookie &diskCookie, parsedCookies) {
+                if (diskCookie.name() == cookie.name() &&
+                    diskCookie.path() == cookie.path() &&
+                    diskCookie.domain() == cookie.domain()) {
+      
+                    kDebug() << "removal" << c.remove();
+                }
+            }
+        }
+
+        saveCookieToDisk(cookie);
+        added++;
+    }
+
+    return (added > 0);
+}
+
+void NetworkCookieJar::saveCookieToDisk(const QNetworkCookie &cookie)
+{
+    QDir saveDir(cookieDirectory());
+    kDebug() << saveDir.absolutePath();
+    if (!saveDir.exists()) {
+        kWarning() << "unable to save cookies";
+        return;
+    }
+
+    QString fileName = randomCookieName();
+
+    while (saveDir.exists(fileName)) {
+        fileName = randomCookieName();
+    }
+
+    QFile cookieFile(saveDir.absolutePath() + QDir::separator() + fileName);
+    kDebug() << "cookie" << cookieFile.fileName();
+    if (!cookieFile.open(QIODevice::WriteOnly)) {
+        kWarning() << "unable to write cookie";
+        return;
+    }
+    cookieFile.write(cookie.toRawForm());
+    cookieFile.close();
 }

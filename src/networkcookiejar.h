@@ -33,11 +33,14 @@ public:
     NetworkCookieJar(QObject *parent);
     ~NetworkCookieJar();
 
+    bool setCookiesFromUrl(const QList<QNetworkCookie> &cookieList, const QUrl &url);
+
 private:
     QList<QNetworkCookie> loadCookiesFromDisk();
-    void saveCookiesToDisk();
+    void saveAllCookiesToDisk();
+    void saveCookieToDisk(const QNetworkCookie &);
     QString cookieDirectory();
-    QString randomCookieName();
+    QString randomCookieName() const;
 
 };
 

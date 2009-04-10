@@ -21,7 +21,6 @@
 #include "webview.h"
 
 #include "windowshandler.h"
-#include "networkcookiejar.h"
 #include "mainwindow.h"
 
 #include <QContextMenuEvent>
@@ -38,7 +37,6 @@
 WebPage::WebPage(QObject *parent) : QWebPage(parent), m_newTab(false)
 {
     setNetworkAccessManager(WindowsHandler::instance()->networkAccessManager());
-    networkAccessManager()->setCookieJar(new NetworkCookieJar(this));
 }
 
 WebPage::~WebPage()

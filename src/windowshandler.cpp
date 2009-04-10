@@ -20,6 +20,7 @@
  */
 #include "windowshandler.h"
 #include "mainwindow.h"
+#include "networkcookiejar.h"
 
 #include <QApplication>
 #include <QNetworkAccessManager>
@@ -67,6 +68,7 @@ QNetworkAccessManager* WindowsHandler::networkAccessManager()
 {
     if (!m_nmanager) {
         m_nmanager = new QNetworkAccessManager(this);
+        m_nmanager->setCookieJar(new NetworkCookieJar(this));
     }
 
     return m_nmanager;
