@@ -37,7 +37,6 @@ private:
     QList<QNetworkCookie> loadCookiesFromDisk();
     void saveCookiesToDisk();
     QString cookieDirectory();
-
     QString randomCookieName();
 
 };

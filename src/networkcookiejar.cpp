@@ -115,6 +115,7 @@ QList<QNetworkCookie> NetworkCookieJar::loadCookiesFromDisk()
         }
         cookieList << QNetworkCookie::parseCookies(c.readAll());
         c.close();
+        cookieDir.remove(cookieFile);
     }
 
     return cookieList;
