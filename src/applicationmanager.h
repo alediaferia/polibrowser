@@ -18,45 +18,42 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  *
  */
-#ifndef NETWORKCOOKIEJAR_H
-#define NETWORKCOOKIEJAR_H
+#ifndef WINDOWSHANDLER_H
+#define WINDOWSHANDLER_H
 
-#include <QNetworkCookieJar>
+#include <QObject>
 #include <QList>
+#include <QPointer>
 
-class QNetworkCookie;
+class MainWindow;
+class QNetworkAccessManager;
 
-class NetworkCookieJar : public QNetworkCookieJar
+class ApplicationManager : public QObject
 {
     Q_OBJECT
 public:
-    NetworkCookieJar(QObject *parent);
-    ~NetworkCookieJar();
+    ~ApplicationManager();
 
-    bool setCookiesFromUrl(const QList<QNetworkCookie> &cookieList, const QUrl &url);
-    QList<QNetworkCookie> cookiesForUrl(const QUrl &) const;
-
-    void setCookiesDirectory(const QString &dir);
-    QString cookiesDirectory() const;
+    static ApplicationManager* instance();
+    QNetworkAccessManager *networkAccessManager();
 
 private:
-//     QList<QNetworkCookie> loadCookiesFromDisk();
-    QList<QNetworkCookie> parseCookieFile(const QString &fileName) const;
+    static ApplicationManager *m_instance;
+    QNetworkAccessManager *m_nmanager;
+    QList< QPointer<MainWindow> > m_windows;
 
-//     void saveAllCookiesToDisk();
-    void saveCookieToDisk(const QNetworkCookie &);
-
+    QString cacheDirectory() const;
     QString cookieDirectory() const;
+    QString applicationSaveDirectory() const;
 
-    QString randomCookieName() const;
+public slots:
+    MainWindow *createWindow();
 
-    bool isValidByDomain(const QNetworkCookie &, const QUrl &) const;
-    bool isValidByPath(const QNetworkCookie &, const QUrl &) const;
-    bool isValidByExpirationDate(const QNetworkCookie &) const;
+private slots:
+    void destroyWindows();
 
-private:
-    QString m_cookiesDirectory;
-
+protected:
+    ApplicationManager(QObject *parent = 0);
 };
 
 #endif

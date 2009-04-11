@@ -36,72 +36,36 @@
 NetworkCookieJar::NetworkCookieJar(QObject *parent) : QNetworkCookieJar(parent)
 {
     qsrand(QTime::currentTime().second());
-//     setAllCookies(loadCookiesFromDisk());
 }
 
 NetworkCookieJar::~NetworkCookieJar()
 {
-//     QDir cookieDir(cookieDirectory());
-//     foreach (const QString &cookie, cookieDir.entryList(QDir::Files | QDir::NoDotAndDotDot)) { // this avoids duplications
-//         cookieDir.remove(cookie);
-//     }
-//     saveAllCookiesToDisk();
 }
 
-void NetworkCookieJar::saveAllCookiesToDisk()
-{
-    foreach (const QNetworkCookie &cookie, allCookies()) {
-        saveCookieToDisk(cookie);
-    }
-}
+// void NetworkCookieJar::saveAllCookiesToDisk()
+// {
+//     foreach (const QNetworkCookie &cookie, allCookies()) {
+//         saveCookieToDisk(cookie);
+//     }
+// }
 
 QString NetworkCookieJar::randomCookieName() const
 {
     return QString::number(qrand()).append(".txt");
 }
 
-QString NetworkCookieJar::cookieDirectory() const
-{
-    QDir cookieDir = QDir::home();
-    kDebug() << cookieDir.absolutePath();
-    QString appSaveDir = "." + KCmdLineArgs::aboutData()->appName();
-    if (!cookieDir.exists(appSaveDir)) { // we create the dir .polibrowser if it does not exist
-        if (!cookieDir.mkdir(appSaveDir)) {
-            return QString();
-        }
-    }
-    kDebug() << cookieDir.absolutePath();
-
-    if (!cookieDir.cd(appSaveDir)) { // an error occurred
-        return QString();
-    }
-    kDebug() << cookieDir.absolutePath();
-
-    if (!cookieDir.exists("cookies") && !cookieDir.mkdir("cookies")) {
-        return QString();
-    }
-
-    if (!cookieDir.cd("cookies")) {
-        return QString();
-    }
-    kDebug() << cookieDir.absolutePath();
-
-    // if we are here then cookieDirectory() == ~/.polibrowser/cookies
-    return cookieDir.absolutePath();
-}
-
-QList<QNetworkCookie> NetworkCookieJar::loadCookiesFromDisk()
-{
-    QList<QNetworkCookie> cookieList;
-
-    QDir cookieDir(cookieDirectory());
-    kDebug() << cookieDir.absolutePath();
-    foreach (const QString &cookieFile, cookieDir.entryList(QDir::Files | QDir::NoDotAndDotDot)) {
-        cookieList << parseCookieFile(cookieDir.absolutePath() + QDir::separator() + cookieFile);
-    }
-
-    return cookieList;
-}
+// QList<QNetworkCookie> NetworkCookieJar::loadCookiesFromDisk()
+// {
+//     QList<QNetworkCookie> cookieList;
+// 
+//     QDir cookieDir(cookieDirectory());
+//     kDebug() << cookieDir.absolutePath();
+//     foreach (const QString &cookieFile, cookieDir.entryList(QDir::Files | QDir::NoDotAndDotDot)) {
+//         cookieList << parseCookieFile(cookieDir.absolutePath() + QDir::separator() + cookieFile);
+//     }
+// 
+//     return cookieList;
+// }
 
 bool NetworkCookieJar::isValidByDomain(const QNetworkCookie &cookie, const QUrl &url) const
 {
@@ -146,7 +110,7 @@ QList<QNetworkCookie> NetworkCookieJar::cookiesForUrl(const QUrl &url) const
     QList<QNetworkCookie> result;
     QString urlDomain = url.host();
 
-    QDirIterator it(cookieDirectory(), QDir::Files | QDir::NoDotAndDotDot);
+    QDirIterator it(m_cookiesDirectory, QDir::Files | QDir::NoDotAndDotDot);
     while (it.hasNext()) {
         QList<QNetworkCookie> parsedCookies = parseCookieFile(it.next());
         foreach (const QNetworkCookie &cookie, parsedCookies) {
@@ -215,7 +179,7 @@ bool NetworkCookieJar::setCookiesFromUrl(const QList<QNetworkCookie> &cookieList
         }
 
         // let's look for already existing cookies and eventually delete from the disk
-        QDirIterator it(cookieDirectory(), QDir::Files | QDir::NoDotAndDotDot);
+        QDirIterator it(m_cookiesDirectory, QDir::Files | QDir::NoDotAndDotDot);
         while (it.hasNext()) {
             const QString cookieFile = it.next();
             QList<QNetworkCookie> parsedCookies = parseCookieFile(cookieFile);
@@ -238,7 +202,7 @@ bool NetworkCookieJar::setCookiesFromUrl(const QList<QNetworkCookie> &cookieList
 
 void NetworkCookieJar::saveCookieToDisk(const QNetworkCookie &cookie)
 {
-    QDir saveDir(cookieDirectory());
+    QDir saveDir(m_cookiesDirectory);
     kDebug() << saveDir.absolutePath();
     if (!saveDir.exists()) {
         kWarning() << "unable to save cookies";
@@ -272,4 +236,14 @@ QList<QNetworkCookie> NetworkCookieJar::parseCookieFile(const QString &fileName)
      c.close();
 
     return parsedCookies;
+}
+
+void NetworkCookieJar::setCookiesDirectory(const QString &dir)
+{
+    m_cookiesDirectory = dir;
+}
+
+QString NetworkCookieJar::cookiesDirectory() const
+{
+    return m_cookiesDirectory;
 }

@@ -20,7 +20,7 @@
  */
 #include "webview.h"
 
-#include "windowshandler.h"
+#include "applicationmanager.h"
 #include "mainwindow.h"
 
 #include <QContextMenuEvent>
@@ -36,7 +36,7 @@
 
 WebPage::WebPage(QObject *parent) : QWebPage(parent), m_newTab(false)
 {
-    setNetworkAccessManager(WindowsHandler::instance()->networkAccessManager());
+    setNetworkAccessManager(ApplicationManager::instance()->networkAccessManager());
 }
 
 WebPage::~WebPage()
@@ -74,7 +74,7 @@ QWebPage* WebPage::createWindow ( WebWindowType type )
         }
     }
 
-    MainWindow *window = WindowsHandler::instance()->createWindow();
+    MainWindow *window = ApplicationManager::instance()->createWindow();
     QWebPage *page = window->currentView()->page();
     return page;
 }
@@ -90,6 +90,7 @@ WebView::WebView (QWidget *parent) : QWebView(parent)
     pageAction(QWebPage::OpenImageInNewWindow)->setIcon(KIcon("window-new"));
     pageAction(QWebPage::DownloadImageToDisk)->setIcon(KIcon("document-save"));
 }
+
 void WebView::contextMenuEvent(QContextMenuEvent *event)
 {
     QWebHitTestResult result = page()->mainFrame()->hitTestContent(event->pos());

@@ -21,7 +21,7 @@
 
 #include "mainwindow.h"
 #include "webview.h"
-#include "windowshandler.h"
+#include "applicationmanager.h"
 
 #include <QtWebKit/QWebView>
 #include <QtWebKit/QWebPage>
@@ -131,7 +131,7 @@ void MainWindow::setupActions()
     newWindow->setIcon(KIcon("window-new"));
     newWindow->setShortcut(Qt::CTRL+Qt::Key_N);
     actionCollection()->addAction("new_window", newWindow);
-    connect(newWindow, SIGNAL(triggered()), WindowsHandler::instance(), SLOT(createWindow()));
+    connect(newWindow, SIGNAL(triggered()), ApplicationManager::instance(), SLOT(createWindow()));
 
     KAction *homeAction = new KAction(this);
     homeAction->setText(i18n("Home"));

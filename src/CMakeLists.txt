@@ -10,7 +10,7 @@ set( polibrowser_SRCS
      mainwindow.cpp
      main.cpp
      networkcookiejar.cpp
-     windowshandler.cpp
+     applicationmanager.cpp
      webview.cpp
  )
 
