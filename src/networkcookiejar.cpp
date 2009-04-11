@@ -36,16 +36,16 @@
 NetworkCookieJar::NetworkCookieJar(QObject *parent) : QNetworkCookieJar(parent)
 {
     qsrand(QTime::currentTime().second());
-    setAllCookies(loadCookiesFromDisk());
+//     setAllCookies(loadCookiesFromDisk());
 }
 
 NetworkCookieJar::~NetworkCookieJar()
 {
-    QDir cookieDir(cookieDirectory());
-    foreach (const QString &cookie, cookieDir.entryList(QDir::Files | QDir::NoDotAndDotDot)) { // this avoids duplications
-        cookieDir.remove(cookie);
-    }
-    saveAllCookiesToDisk();
+//     QDir cookieDir(cookieDirectory());
+//     foreach (const QString &cookie, cookieDir.entryList(QDir::Files | QDir::NoDotAndDotDot)) { // this avoids duplications
+//         cookieDir.remove(cookie);
+//     }
+//     saveAllCookiesToDisk();
 }
 
 void NetworkCookieJar::saveAllCookiesToDisk()
@@ -60,7 +60,7 @@ QString NetworkCookieJar::randomCookieName() const
     return QString::number(qrand()).append(".txt");
 }
 
-QString NetworkCookieJar::cookieDirectory()
+QString NetworkCookieJar::cookieDirectory() const
 {
     QDir cookieDir = QDir::home();
     kDebug() << cookieDir.absolutePath();
@@ -97,17 +97,91 @@ QList<QNetworkCookie> NetworkCookieJar::loadCookiesFromDisk()
     QDir cookieDir(cookieDirectory());
     kDebug() << cookieDir.absolutePath();
     foreach (const QString &cookieFile, cookieDir.entryList(QDir::Files | QDir::NoDotAndDotDot)) {
-        kDebug() << "reading" << cookieFile;
-        QFile c(cookieDir.absolutePath() + QDir::separator() + cookieFile);
-        if (!c.open(QIODevice::ReadOnly)) {
-            kWarning() << "unable to read from file" << c.fileName();
-            continue;
-        }
-        cookieList << QNetworkCookie::parseCookies(c.readAll());
-        c.close();
+        cookieList << parseCookieFile(cookieDir.absolutePath() + QDir::separator() + cookieFile);
     }
 
     return cookieList;
+}
+
+bool NetworkCookieJar::isValidByDomain(const QNetworkCookie &cookie, const QUrl &url) const
+{
+    kDebug() << "cookie =" << cookie.domain()
+             << "url =" << url.host();
+
+    if (cookie.domain().startsWith(QLatin1Char('.'))) {
+        return url.host().endsWith(cookie.domain()) || cookie.domain().mid(1) == url.host();
+    }
+
+    return cookie.domain() == url.host();
+}
+
+bool NetworkCookieJar::isValidByPath(const QNetworkCookie &cookie, const QUrl &url) const
+{
+    QString urlPath = url.path();
+    if (urlPath.isEmpty()) {
+        urlPath = QLatin1Char('/');
+    }
+    kDebug() << "cookie path" << cookie.path()
+             << "url path" << urlPath;
+
+    if (urlPath.startsWith(cookie.path())) {
+        return true;
+    }
+
+    return false;
+}
+
+bool NetworkCookieJar::isValidByExpirationDate(const QNetworkCookie &cookie) const
+{
+    QDateTime now = QDateTime::currentDateTime();
+    if (!cookie.isSessionCookie() && cookie.expirationDate() < now) {
+        return false;
+    }
+
+    return true;
+}
+
+QList<QNetworkCookie> NetworkCookieJar::cookiesForUrl(const QUrl &url) const
+{
+    QList<QNetworkCookie> result;
+    QString urlDomain = url.host();
+
+    QDirIterator it(cookieDirectory(), QDir::Files | QDir::NoDotAndDotDot);
+    while (it.hasNext()) {
+        QList<QNetworkCookie> parsedCookies = parseCookieFile(it.next());
+        foreach (const QNetworkCookie &cookie, parsedCookies) {
+            if (!isValidByDomain(cookie, url)) {
+                kDebug() << "skipping cookie due to domain";
+                continue;
+            }
+            kDebug() << "accepted cookie by domain";
+            if (!isValidByPath(cookie, url)) {
+                kDebug() << "skipping cookie due to path";
+                continue;
+            }
+            kDebug() << "accepted cookie by path";
+
+            if (!isValidByExpirationDate(cookie)) {
+                continue;
+            }
+
+            // since the API we need to sort results by path length
+            QList<QNetworkCookie>::iterator i = result.begin();
+            while (i != result.end()) {
+                if (cookie.path().length() < i->path().length()) {
+                    i = result.insert(i, cookie);
+                    break;
+                } else {
+                    ++i;
+                }
+            }
+            if (i == result.end()) { // if we reach the end with the iterator then our cookie has the shortest path, so just append it
+                result.append(cookie);
+            }
+        }
+    }
+
+    return result;
 }
 
 bool NetworkCookieJar::setCookiesFromUrl(const QList<QNetworkCookie> &cookieList, const QUrl &url)
@@ -116,40 +190,41 @@ bool NetworkCookieJar::setCookiesFromUrl(const QList<QNetworkCookie> &cookieList
     if (defaultPath.isEmpty()) {
         defaultPath = QLatin1Char('/');
     }
-    QString defaultDomain = url.host();
-    QDateTime now = QDateTime::currentDateTime();
 
     int added = 0;
     foreach (QNetworkCookie cookie, cookieList) {
-        if (!cookie.domain().startsWith('.') || !defaultDomain.endsWith(cookie.domain())) { // not accepted
+
+        if (cookie.domain().isEmpty()) {
+            cookie.setDomain(url.host());
+        } else if (!isValidByDomain(cookie, url)) { // not accepted
+            kDebug() << "cookie not accepted due to domain";
+            continue;
+        }
+        kDebug() << "cookie accepted by domain";
+
+        if (!isValidByExpirationDate(cookie)) { // not accepted
+            kDebug() << "cookie not accepted due to expiration date";
             continue;
         }
 
-        if (!cookie.isSessionCookie() && cookie.expirationDate() < now) { // not accepted
-            continue;
-        }
-
-        if (cookie.path().isEmpty()) { // fixed (we are not so strict =)
-            kDebug() << "setting default path to" << defaultPath;
-            cookie.setPath(defaultPath);
+        if (!isValidByPath(cookie, url)) {
+            if (cookie.path().isEmpty()) { // fixed (we are not so strict =)
+                kDebug() << "setting default path to" << defaultPath;
+                cookie.setPath(defaultPath);
+            }
         }
 
         // let's look for already existing cookies and eventually delete from the disk
         QDirIterator it(cookieDirectory(), QDir::Files | QDir::NoDotAndDotDot);
         while (it.hasNext()) {
-            QFile c(it.next());
-            if (!c.open(QIODevice::ReadOnly)) {
-                kWarning() << "unable to open cookie" << c.fileName() << "skipping.";
-                continue;
-            }
-            QList<QNetworkCookie> parsedCookies = QNetworkCookie::parseCookies(c.readAll());
-            c.close();
+            const QString cookieFile = it.next();
+            QList<QNetworkCookie> parsedCookies = parseCookieFile(cookieFile);
             foreach (const QNetworkCookie &diskCookie, parsedCookies) {
                 if (diskCookie.name() == cookie.name() &&
                     diskCookie.path() == cookie.path() &&
                     diskCookie.domain() == cookie.domain()) {
       
-                    kDebug() << "removal" << c.remove();
+                    kDebug() << "removal" << cookieFile << QFile::remove(cookieFile);
                 }
             }
         }
@@ -184,4 +259,17 @@ void NetworkCookieJar::saveCookieToDisk(const QNetworkCookie &cookie)
     }
     cookieFile.write(cookie.toRawForm());
     cookieFile.close();
+}
+
+QList<QNetworkCookie> NetworkCookieJar::parseCookieFile(const QString &fileName) const
+{
+    QFile c(fileName);
+    if (!c.open(QIODevice::ReadOnly)) {
+        kWarning() << "unable to open cookie" << c.fileName();
+        return QList<QNetworkCookie>();
+     }
+     QList<QNetworkCookie> parsedCookies = QNetworkCookie::parseCookies(c.readAll());
+     c.close();
+
+    return parsedCookies;
 }

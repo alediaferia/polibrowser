@@ -13,7 +13,6 @@ set( polibrowser_SRCS
      windowshandler.cpp
      webview.cpp
  )
-# kde4_add_ui_files(gluk_SRCS main.ui packagedock.ui installdock.ui instresumedock.ui)
 
 kde4_add_executable(polibrowser ${polibrowser_SRCS})
 

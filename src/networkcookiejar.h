@@ -34,13 +34,22 @@ public:
     ~NetworkCookieJar();
 
     bool setCookiesFromUrl(const QList<QNetworkCookie> &cookieList, const QUrl &url);
+    QList<QNetworkCookie> cookiesForUrl(const QUrl &) const;
 
 private:
     QList<QNetworkCookie> loadCookiesFromDisk();
+    QList<QNetworkCookie> parseCookieFile(const QString &fileName) const;
+
     void saveAllCookiesToDisk();
     void saveCookieToDisk(const QNetworkCookie &);
-    QString cookieDirectory();
+
+    QString cookieDirectory() const;
+
     QString randomCookieName() const;
+
+    bool isValidByDomain(const QNetworkCookie &, const QUrl &) const;
+    bool isValidByPath(const QNetworkCookie &, const QUrl &) const;
+    bool isValidByExpirationDate(const QNetworkCookie &) const;
 
 };
 
