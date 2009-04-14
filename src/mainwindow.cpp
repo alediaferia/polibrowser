@@ -94,6 +94,7 @@ void MainWindow::setupActions()
     KAction *reloadAction = new KAction(this);
     reloadAction->setText(i18n("Reload"));
     reloadAction->setIcon(KIcon("view-refresh"));
+    reloadAction->setShortcut(Qt::Key_F5);
     actionCollection()->addAction("reload", reloadAction);
     connect(reloadAction, SIGNAL(triggered()), this, SLOT(reload()));
 
@@ -248,6 +249,8 @@ void MainWindow::addTab()
     }
 
     m_tabWidget->setCurrentWidget(webView);
+
+    m_combo->setFocus(Qt::OtherFocusReason);
 }
 
 QWebView *MainWindow::currentView()

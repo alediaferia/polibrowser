@@ -81,14 +81,20 @@ bool NetworkCookieJar::isValidByDomain(const QNetworkCookie &cookie, const QUrl 
 
 bool NetworkCookieJar::isValidByPath(const QNetworkCookie &cookie, const QUrl &url) const
 {
+    QString cookiePath = cookie.path();
+    if (cookiePath.isEmpty()) {
+        cookiePath = QLatin1Char('/');
+    }
+
     QString urlPath = url.path();
     if (urlPath.isEmpty()) {
         urlPath = QLatin1Char('/');
     }
-    kDebug() << "cookie path" << cookie.path()
+
+    kDebug() << "cookie path" << cookiePath
              << "url path" << urlPath;
 
-    if (urlPath.startsWith(cookie.path())) {
+    if (urlPath.startsWith(cookiePath)) {
         return true;
     }
 
@@ -98,6 +104,7 @@ bool NetworkCookieJar::isValidByPath(const QNetworkCookie &cookie, const QUrl &u
 bool NetworkCookieJar::isValidByExpirationDate(const QNetworkCookie &cookie) const
 {
     QDateTime now = QDateTime::currentDateTime();
+    kDebug() << "cookie" << cookie.expirationDate() << "vs" << now;
     if (!cookie.isSessionCookie() && cookie.expirationDate() < now) {
         return false;
     }
@@ -171,7 +178,9 @@ bool NetworkCookieJar::setCookiesFromUrl(const QList<QNetworkCookie> &cookieList
             continue;
         }
 
+        kDebug() << "checking for path validity";
         if (!isValidByPath(cookie, url)) {
+            kDebug() << "checking for empty path";
             if (cookie.path().isEmpty()) { // fixed (we are not so strict =)
                 kDebug() << "setting default path to" << defaultPath;
                 cookie.setPath(defaultPath);
